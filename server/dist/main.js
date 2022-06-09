@@ -41,11 +41,11 @@ const ServerInfo_1 = require("./ServerInfo");
 const IMAP = __importStar(require("./IMAP"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
-app.use("/", express_1.default.static(path_1.default.join(__dirname, "../../client/dist")));
+app.use('/', express_1.default.static(path_1.default.join(__dirname, '../../client/dist')));
 app.use(function (inRequest, inResponse, inNext) {
-    inResponse.header("Access-Control-Allow-Origin", "*");
-    inResponse.header("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
-    inResponse.header("Access-Control-Allow-Headers", "Origin,X-Requested-With,Content-Type,Accept");
+    inResponse.header("Access-Control-Allow_Origin", "*");
+    inResponse.header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+    inResponse.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     inNext();
 });
 app.get("/mailboxes", (inRequest, inResponse) => __awaiter(void 0, void 0, void 0, function* () {
@@ -55,32 +55,7 @@ app.get("/mailboxes", (inRequest, inResponse) => __awaiter(void 0, void 0, void 
         inResponse.json(mailboxes);
     }
     catch (inError) {
-        inResponse.send("error");
-    }
-}));
-app.get("/mailboxes/:mailbox", (inRequest, inResponse) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const imapWorker = new IMAP.Worker(ServerInfo_1.serverInfo);
-        const messages = yield imapWorker.listMessages({
-            mailbox: inRequest.params.mailbox
-        });
-        inResponse.json(messages);
-    }
-    catch (inError) {
-        inResponse.send("error");
-    }
-}));
-app.get("/messages/:mailbox/:id", (inRequest, inResponse) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const imapWorker = new IMAP.Worker(ServerInfo_1.serverInfo);
-        const messageBody = yield imapWorker.getMessageBody({
-            mailbox: inRequest.params.mailbox,
-            id: parseInt(inRequest.params.id, 10)
-        });
-        inResponse.send(messageBody);
-    }
-    catch (inError) {
-        inResponse.send("error");
+        inResponse.send('error');
     }
 }));
 //# sourceMappingURL=main.js.map
