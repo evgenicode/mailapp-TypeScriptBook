@@ -77,7 +77,7 @@ export class Worker {
     return finalMessages;
   }
 
-  public async getMessageBody(inCallOptions: ICallOptions): Promise<string> {
+  public async getMessageBody(inCallOptions: ICallOptions): Promise<any> { // was Promise<string>
     const client: any = await this.connectToServer();
     const messages: any[] = await client.listMessages(
       inCallOptions.mailbox, 
