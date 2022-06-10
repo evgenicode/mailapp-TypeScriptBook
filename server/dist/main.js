@@ -39,15 +39,19 @@ const path_1 = __importDefault(require("path"));
 const express_1 = __importDefault(require("express"));
 const ServerInfo_1 = require("./ServerInfo");
 const IMAP = __importStar(require("./IMAP"));
+const SMTP = __importStar(require("./SMTP"));
+const Contacts = __importStar(require("./Contacts"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use('/', express_1.default.static(path_1.default.join(__dirname, '../../client/dist')));
+// CORS
 app.use(function (inRequest, inResponse, inNext) {
     inResponse.header("Access-Control-Allow_Origin", "*");
     inResponse.header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
     inResponse.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     inNext();
 });
+// List mailboxes
 app.get("/mailboxes", (inRequest, inResponse) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const imapWorker = new IMAP.Worker(ServerInfo_1.serverInfo);
@@ -56,6 +60,91 @@ app.get("/mailboxes", (inRequest, inResponse) => __awaiter(void 0, void 0, void 
     }
     catch (inError) {
         inResponse.send('error');
+    }
+}));
+// List messages
+app.get("/mailboxes/:mailbox", (inRequest, inResponse) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const imapWorker = new IMAP.Worker(ServerInfo_1.serverInfo);
+        const messages = yield imapWorker.listMessages({
+            mailbox: inRequest.params.mailbox
+        });
+        inResponse.json(messages);
+    }
+    catch (inError) {
+        inResponse.send("error");
+    }
+}));
+// Get specific message
+app.get("/messages/:mailbox/:is", (inRequest, inResponse) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const imapWorker = new IMAP.Worker(ServerInfo_1.serverInfo);
+        const messageBody = yield imapWorker.getMessageBody({
+            mailbox: inRequest.params.mailbox,
+            id: parseInt(inRequest.params.id, 10)
+        });
+        inResponse.send(messageBody);
+    }
+    catch (inError) {
+        inResponse.send("error");
+    }
+}));
+// Delete a message
+app.delete("/messages/:mailbox/:id", (inRequest, inResponse) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const imapWorker = new IMAP.Worker(ServerInfo_1.serverInfo);
+        yield imapWorker.deleteMessage({
+            mailbox: inRequest.params.mailbox,
+            id: parseInt(inRequest.params.id, 10)
+        });
+        inResponse.send("ok");
+    }
+    catch (inError) {
+        inResponse.send("error");
+    }
+}));
+// Send a message
+app.post("/message", (inRequest, inResponse) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const smtpWorker = new SMTP.Worker(ServerInfo_1.serverInfo);
+        yield smtpWorker.sendMessage(inRequest.body);
+        inResponse.send("ok");
+    }
+    catch (inError) {
+        inResponse.send("error");
+    }
+}));
+// List all contacts
+app.get("/contacts", (inRequest, inResponse) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const contactsWorker = new Contacts.Worker();
+        const contacts = yield contactsWorker.listContacts();
+        inResponse.json(contacts);
+    }
+    catch (inError) {
+        inResponse.send("error");
+    }
+}));
+// Add contact
+app.post("/contacts", (inRequest, inResponse) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const contactsWorker = new Contacts.Worker();
+        const contact = yield contactsWorker.addContact(inRequest.body);
+        inResponse.json(contact);
+    }
+    catch (inError) {
+        inResponse.send("error");
+    }
+}));
+// Delete contact
+app.delete("/contacts/:id", (inRequest, inResponse) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const contactsWorker = new Contacts.Worker();
+        yield contactsWorker.deleteContact(inRequest.params.id);
+        inResponse.send("ok");
+    }
+    catch (inError) {
+        inResponse.send("error");
     }
 }));
 //# sourceMappingURL=main.js.map
